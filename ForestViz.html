@@ -12,7 +12,9 @@ var width = 1000;
 var height = 1000;
 
 var lastYear = [];
+var incomeGroup = [];
 var treeData;
+
 
 d3.csv("data/Forest_Land_SqM_Test.csv", function(error, myData){
     if (error) {
@@ -26,19 +28,24 @@ d3.csv("data/Forest_Land_SqM_Test.csv", function(error, myData){
         lastYear.push(parseInt(myData[i][2015]));
     }
 
+    for (var i = 0; i<treeData.length; i++) {
+        incomeGroup.push((myData[i].IncomeGroup));
+    }
+
+    console.log(incomeGroup);
+
     var min = d3.min(lastYear);
     var max = d3.max(lastYear);
 
-    var xScale = d3.scale.linear() 
+    var rScale = d3.scale.linear() 
                 .domain([min, max])//what is the min and max coming in
                 .range([5, 200])//whati is the min and max comimg out
     console.log("Second function");
     var nodes = d3.range(lastYear.length).map(function(d,i) { 
-        console.log(xScale(lastYear[i]));
 
         return {
             // radius: lastYear[i] / 10000
-            radius : xScale(lastYear[i])
+            radius : rScale(lastYear[i])
             }
         }),
         root = nodes[0];
@@ -69,9 +76,16 @@ d3.csv("data/Forest_Land_SqM_Test.csv", function(error, myData){
         .data(nodes.slice(1))
         .enter().append("circle")
         .attr("r", function(d) { return d.radius; })
-        // .style("fill", function(d, i) { return color(i % 3); });
+        //.attr("cx") //---this will be decided by income
+        // .style("fill", function(d, i) { return color(i % 3); })
         .style("fill","pink")
         .style("stroke","salmon");
+
+    var xCoordinates = d3.scaleOrdinal([25, 50, 75, 100]);
+//   arc.append("path")
+//     .attr("d", path)
+//     .attr("fill", function(d) { return color(d.data["Country Name"]); });
+
 
     force.on("tick", function(e) {
       var q = d3.geom.quadtree(nodes),
