@@ -8,22 +8,26 @@
 <script type="text/javascript">
 
 
-var width = 1000;
-var height = 1000;
+var width = 1500;
+var height = 1500;
 
 var lastYear = [];
 var incomeGroup = [];
 var treeData;
 
+var colors = ["#6CD7C6", "#6CDAA9", "#6BDE8A", "#6BE16A", "#8DE569", "#B2E968", "#D9EC67", "#F0DC66", "#F3B664", "#F78E63", "#FA6261"];
 
-d3.csv("data/Forest_Land_SqM_Test.csv", function(error, myData){
-    if (error) {
-        console.error('Error getting or parsing the data.');
-        throw error;
-    }  
+
+d3.csv("data/Forest_Land_SqM_Test.csv", function(myData){
+  console.log(myData);
+// return {
+//     incomeGroup : myData.IncomeGroup
+// }
+  
+  
 
     treeData = myData;
-
+    
     for (var i = 0; i<treeData.length; i++) {
         lastYear.push(parseInt(myData[i][2015]));
     }
@@ -32,7 +36,7 @@ d3.csv("data/Forest_Land_SqM_Test.csv", function(error, myData){
         incomeGroup.push((myData[i].IncomeGroup));
     }
 
-    console.log(incomeGroup);
+
 
     var min = d3.min(lastYear);
     var max = d3.max(lastYear);
@@ -54,74 +58,101 @@ d3.csv("data/Forest_Land_SqM_Test.csv", function(error, myData){
     // var radius = d3.scaleLinear()
     // .domain([0, data.length])//what is the min and max coming in
     // .range([10, width-10])//whati is the min and max comimg out
-
+    
     root.radius = 0;
     root.fixed = true;
 
 
-    var force = d3.layout.force()
-        .gravity(0.05)
-        .charge(function(d, i) { return i ? 0 : -2000; })
-        .nodes(nodes)
-        .size([width, height]);
+    // var force = d3.layout.force()
+    //     .gravity(0.05)
+    //     .charge(function(d, i) { return i ? 0 : -2000; })
+    //     .nodes(nodes)
+    //     .size([width, height]);
 
-    force.start();
+    // force.start();
 
+    var xCoordinates = d3.scale.ordinal([250, 500, 750, 1000]);
+
+    var incomeGroupEnum = ["Low income","Lower middle income","Upper middle income","High income"];
+    var incomeGroupEnumValues = [250, 500, 750, 1000];
+
+    var colorScale = d3.scale.quantize()
+      .range(colors)
+      .domain([min,max]);
 
     var svg = d3.select("body").append("svg")
         .attr("width", width)
         .attr("height", height);
-
-    svg.selectAll("circle")
-        .data(nodes.slice(1))
+            svg.selectAll("circle")
+        .data(myData)
         .enter().append("circle")
-        .attr("r", function(d) { return d.radius; })
-        //.attr("cx") //---this will be decided by income
-        // .style("fill", function(d, i) { return color(i % 3); })
+        .attr("r", function(d) { 
+          console.log(d["2015"]);
+          return rScale(+d["2015"]); 
+        })
+        .attr("cx", function(d) { 
+          return incomeGroupEnumValues[incomeGroupEnum.indexOf(d.IncomeGroup)] } )
+        .attr("cy", height/2)
+
+    // svg.selectAll("circle")
+    //     .data(nodes.slice(1))
+    //     .enter().append("circle")
+    //     .attr("r", function(d) { return d.radius; })
+    //     .attr("cx", function(d) { 
+    //       console.log(d)
+    //       return incomeGroupEnumValues[incomeGroupEnum.indexOf(d.IncomeGroup)] } )
+        //.attr("cx", function(d) { return xCoordinates(incomeGroup)} )//---this will be decided by income
+        
+        // .style("fill", function(lastYear,i){
+        //   return colorScale(lastYear[i]);
+        // }) //this needs to be percentage data
         .style("fill","pink")
         .style("stroke","salmon");
 
-    var xCoordinates = d3.scaleOrdinal([25, 50, 75, 100]);
+    
 //   arc.append("path")
 //     .attr("d", path)
 //     .attr("fill", function(d) { return color(d.data["Country Name"]); });
 
 
-    force.on("tick", function(e) {
-      var q = d3.geom.quadtree(nodes),
-          i = 0,
-          n = nodes.length;
+    // force.on("tick", function(e) {
+    //   var q = d3.geom.quadtree(nodes),
+    //       i = 0,
+    //       n = nodes.length;
 
-      while (++i < n) q.visit(collide(nodes[i]));
+    //   while (++i < n) q.visit(collide(nodes[i]));
 
-      svg.selectAll("circle")
-          .attr("cx", function(d) { return d.x; })
-          .attr("cy", function(d) { return d.y; });
-    });
+    //   svg.selectAll("circle")
+    //       .attr("cx", function(d) { return d.x; })
+    //       .attr("cy", function(d) { return d.y; });
+    // });
 
-    function collide(node) {
-      var r = node.radius + 16,
-          nx1 = node.x - r,
-          nx2 = node.x + r,
-          ny1 = node.y - r,
-          ny2 = node.y + r;
-      return function(quad, x1, y1, x2, y2) {
-        if (quad.point && (quad.point !== node)) {
-          var x = node.x - quad.point.x,
-              y = node.y - quad.point.y,
-              l = Math.sqrt(x * x + y * y),
-              r = node.radius + quad.point.radius;
-          if (l < r) {
-            l = (l - r) / l * .5;
-            node.x -= x *= l;
-            node.y -= y *= l;
-            quad.point.x += x;
-            quad.point.y += y;
-          }
-        }
-        return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
-      };
-    }
+    // function collide(node) {
+    //   var r = node.radius + 16,
+    //       nx1 = node.x - r,
+    //       nx2 = node.x + r,
+    //       ny1 = node.y - r,
+    //       ny2 = node.y + r;
+    //   return function(quad, x1, y1, x2, y2) {
+    //     if (quad.point && (quad.point !== node)) {
+    //       var x = node.x - quad.point.x,
+    //           y = node.y - quad.point.y,
+    //           l = Math.sqrt(x * x + y * y),
+    //           r = node.radius + quad.point.radius;
+    //       if (l < r) {
+    //         l = (l - r) / l * .5;
+    //         node.x -= x *= l;
+    //         node.y -= y *= l;
+    //         quad.point.x += x;
+    //         quad.point.y += y;
+    //       }
+    //     }
+    //     return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+    //   };
+    // }
+
+
+
 
 })
 
