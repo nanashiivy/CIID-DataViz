@@ -1,22 +1,36 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <style>
-
+    div.tooltip {   
+      position: absolute;           
+      text-align: center;           
+      width: auto;                  
+      height: auto;                 
+      padding: 10px;             
+      font: 12px sans-serif;        
+      background: lightsteelblue;   
+      border: 0px;      
+      border-radius: 8px;           
+      pointer-events: none;         
+    }
 </style>
-<body>
+<body style="background-color:#F3F3F5;">
 <script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
 <script type="text/javascript">
 
 
-var width = 2880;
-var height = 1800;
+var width = 1415;
+var height = 8000;
 
 var lastYear = [];
 var incomeGroup = [];
 var changeP = [];
+var gdp_PC = [];
 var treeData;
 var pMin;
 var pMax;
+var gMin;
+var gMax;
 
 var colors = ["#6CD7C6", "#6CDAA9", "#6BDE8A", "#6BE16A", "#8DE569", "#B2E968", "#D9EC67", "#F0DC66", "#F3B664", "#F78E63", "#FA6261"];
 
@@ -39,22 +53,29 @@ d3.csv("data/Forest_Land_SqM_Test.csv", function(myData){
         changeP.push(parseFloat(myData[i]["% of change"]));
     }
 
-    console.log(changeP + "CHANGE");
+
+    for (var i = 0; i<treeData.length; i++) {
+        gdp_PC.push(parseFloat(myData[i].GDP));
+    }
+
+    console.log(gdp_PC + "GDP");
 
     var min = d3.min(lastYear);
     var max = d3.max(lastYear);
 
-
-
     pMin = d3.min(changeP);
     pMax = d3.max(changeP);
+
+
+    gMin = d3.min(gdp_PC);
+    gMax = d3.max(gdp_PC);
 
     console.log("Min: " + pMin);
     console.log("Max: " + pMax);
 
     var rScale = d3.scale.linear() 
                 .domain([min, max])//what is the min and max coming in
-                .range([5, 200])//whati is the min and max comimg out
+                .range([15, 200])//whati is the min and max comimg out
 
     var nodes = d3.range(lastYear.length).map(function(d,i) { 
 
@@ -73,27 +94,27 @@ d3.csv("data/Forest_Land_SqM_Test.csv", function(myData){
     root.radius = 0;
     root.fixed = true;
 
-
-    // var force = d3.layout.force()
-    //     .gravity(0.05)
-    //     .charge(function(d, i) { return i ? 0 : -2000; })
-    //     .nodes(nodes)
-    //     .size([width, height]);
-
-    // force.start();
+    var div = d3.select("body").append("div")   
+      .attr("class", "tooltip")               
+      .style("opacity", 0);
+    
 
     var xCoordinates = d3.scale.ordinal([250, 500, 750, 1000]);
 
     var incomeGroupEnum = ["Low income","Lower middle income","Upper middle income","High income"];
-    var incomeGroupEnumValues = [250, 500, 750, 1000];
+    var incomeGroupEnumValues = [width*0.2857, width*0.4286, width*0.5715, width*0.7144];
 
     var rScale = d3.scale.linear() 
         .domain([min, max])//what is the min and max coming in
-        .range([5, 100])//whati is the min and max comimg out
+        .range([10, 125])//whati is the min and max comimg out
     
     var yScale = d3.scale.linear() 
         .domain([pMin, pMax])//what is the min and max coming in
-        .range([400, 1000])//whati is the min and max comimg out
+        .range([200, height-200])//whati is the min and max comimg out
+
+    // var xScale = d3.scale.linear() 
+    //     .domain([pMin, pMax])//what is the min and max coming in
+    //     .range([200, 1800])//whati is the min and max comimg out
 
     var colorScale = d3.scale.quantize()
         .domain([pMax,pMin])
@@ -102,28 +123,117 @@ d3.csv("data/Forest_Land_SqM_Test.csv", function(myData){
     var svg = d3.select("body").append("svg")
         .attr("width", width)
         .attr("height", height);
-            svg.selectAll("circle")
-        .data(myData)
-        .enter().append("circle")
-        .attr("r", function(d) { 
-          // console.log(d["2015"]);
-          return rScale(+d["2015"]); 
-        })
-        .attr("cx", function(d) { 
-          return incomeGroupEnumValues[incomeGroupEnum.indexOf(d.IncomeGroup)] } )
-        // .attr("cy", height/2)
-        .attr("cy", function(d) { 
-          // console.log(d["2015"]);
-          return yScale(parseFloat(d["% of change"])); 
-        })
+        
+        svg.append("line")
+          .attr("x1", width*0.2857)
+          .attr("y1", 200)
+          .attr("x2", width*0.2857)
+          .attr("y2", height-150)
+          .attr("stroke-width", 1)
+          .style("stroke-dasharray", ("3, 3"))
+          .attr("stroke", "grey")
+          .style("opacity", 0.5);
 
-        .style("fill", function(d,i){
-          return colorScale(parseFloat(d["% of change"]));
-        })
-        .style("stroke","grey")
-        .style("opacity", 0.5);
+        svg.append("line")
+          .attr("x1", width*0.4286)
+          .attr("y1", 200)
+          .attr("x2", width*0.4286)
+          .attr("y2", height-150)
+          .attr("stroke-width", 1)
+          .style("stroke-dasharray", ("3, 3"))
+          .attr("stroke", "grey")
+          .style("opacity", 0.5);
 
-    
+        svg.append("line")
+          .attr("x1", width*0.5715)
+          .attr("y1", 200)
+          .attr("x2", width*0.5715)
+          .attr("y2", height-150)
+          .attr("stroke-width", 1)
+          .style("stroke-dasharray", ("3, 3"))
+          .attr("stroke", "grey")
+          .style("opacity", 0.5);
+        
+        svg.append("line")
+          .attr("x1", width*0.7144)
+          .attr("y1", 200)
+          .attr("x2", width*0.7144)
+          .attr("y2", height-150)
+          .attr("stroke-width", 1)
+          .style("stroke-dasharray", ("3, 3"))
+          .attr("stroke", "grey")
+          .style("opacity", 0.5);
+
+        svg.append("line")
+          .attr("x1", 0)
+          .attr("y1", 2182.3829726037247)
+          .attr("x2", width)
+          .attr("y2", 2182.3829726037247)
+          .attr("stroke-width", 1)
+          .attr("stroke", "grey")
+          .style("opacity", 0.);
+
+
+        // d3.select("body")
+        //   .selectAll("div")
+        //     .data(myData["Country Name"])
+        //   .enter().append("div")
+        //     .style("width", function(d) { return x(d) + "px"; })
+        //     .text(function(d) { return d; });
+
+        // var tooltip = d3.select("circle")
+        //     .append("div")
+        //     .style("position", "absolute")
+        //     .style("z-index", "10")
+        //     .style("visibility", "hidden")
+        //     .style("background", "#000")
+        //     .text("a simple tooltip");
+
+
+        var container;
+
+        svg.selectAll("circle")
+            .data(myData)
+            .enter().append("circle")
+            .attr("r", function(d) { 
+                return rScale(+d["2015"]); })
+            .attr("cx", function(d) { 
+                return incomeGroupEnumValues[incomeGroupEnum.indexOf(d.IncomeGroup)]; })
+            .attr("cy", function(d) { 
+              return yScale((parseFloat(d["% of change"]))); })
+            .style("fill", function(d,i){
+              return colorScale(parseFloat(d["% of change"])); })
+            .style("opacity", 0.8)
+
+            // .style("stroke","grey") 
+            // .style("stroke-width", 3)
+
+            .on("mouseover", function(d,i) {      
+                div.transition()        
+                    .duration(200)      
+                    .style("opacity", .9);
+
+                div.html(d["Country Name"] + "<br/>" + d["% of change"])  
+                    .style("left", (d3.event.pageX) + "px")     
+                    .style("top", (d3.event.pageY - 28) + "px");    
+                })                  
+            .on("mouseout", function(d) {       
+                div.transition()        
+                    .duration(500)      
+                    .style("opacity", 0);   
+        });
+
+
+
+
+
+    // var force = d3.layout.force()
+    //     .gravity(0.05)
+    //     .charge(function(d, i) { return i ? 0 : -2000; })
+    //     .nodes(nodes)
+    //     .size([width, height]);
+
+    // force.start();
 
 
     // force.on("tick", function(e) {
