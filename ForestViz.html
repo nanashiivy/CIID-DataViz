@@ -8,22 +8,21 @@
 <script type="text/javascript">
 
 
-var width = 1500;
-var height = 1500;
+var width = 2880;
+var height = 1800;
 
 var lastYear = [];
 var incomeGroup = [];
+var changeP = [];
 var treeData;
+var pMin;
+var pMax;
 
 var colors = ["#6CD7C6", "#6CDAA9", "#6BDE8A", "#6BE16A", "#8DE569", "#B2E968", "#D9EC67", "#F0DC66", "#F3B664", "#F78E63", "#FA6261"];
 
 
 d3.csv("data/Forest_Land_SqM_Test.csv", function(myData){
   console.log(myData);
-// return {
-//     incomeGroup : myData.IncomeGroup
-// }
-  
   
 
     treeData = myData;
@@ -33,18 +32,30 @@ d3.csv("data/Forest_Land_SqM_Test.csv", function(myData){
     }
 
     for (var i = 0; i<treeData.length; i++) {
-        incomeGroup.push((myData[i].IncomeGroup));
+        incomeGroup.push(myData[i].IncomeGroup);
     }
 
+    for (var i = 0; i<treeData.length; i++) {
+        changeP.push(parseFloat(myData[i]["% of change"]));
+    }
 
+    console.log(changeP + "CHANGE");
 
     var min = d3.min(lastYear);
     var max = d3.max(lastYear);
 
+
+
+    pMin = d3.min(changeP);
+    pMax = d3.max(changeP);
+
+    console.log("Min: " + pMin);
+    console.log("Max: " + pMax);
+
     var rScale = d3.scale.linear() 
                 .domain([min, max])//what is the min and max coming in
                 .range([5, 200])//whati is the min and max comimg out
-    console.log("Second function");
+
     var nodes = d3.range(lastYear.length).map(function(d,i) { 
 
         return {
@@ -76,9 +87,17 @@ d3.csv("data/Forest_Land_SqM_Test.csv", function(myData){
     var incomeGroupEnum = ["Low income","Lower middle income","Upper middle income","High income"];
     var incomeGroupEnumValues = [250, 500, 750, 1000];
 
+    var rScale = d3.scale.linear() 
+        .domain([min, max])//what is the min and max coming in
+        .range([5, 100])//whati is the min and max comimg out
+    
+    var yScale = d3.scale.linear() 
+        .domain([pMin, pMax])//what is the min and max coming in
+        .range([400, 1000])//whati is the min and max comimg out
+
     var colorScale = d3.scale.quantize()
-      .range(colors)
-      .domain([min,max]);
+        .domain([pMax,pMin])
+        .range(colors);
 
     var svg = d3.select("body").append("svg")
         .attr("width", width)
@@ -87,32 +106,24 @@ d3.csv("data/Forest_Land_SqM_Test.csv", function(myData){
         .data(myData)
         .enter().append("circle")
         .attr("r", function(d) { 
-          console.log(d["2015"]);
+          // console.log(d["2015"]);
           return rScale(+d["2015"]); 
         })
         .attr("cx", function(d) { 
           return incomeGroupEnumValues[incomeGroupEnum.indexOf(d.IncomeGroup)] } )
-        .attr("cy", height/2)
+        // .attr("cy", height/2)
+        .attr("cy", function(d) { 
+          // console.log(d["2015"]);
+          return yScale(parseFloat(d["% of change"])); 
+        })
 
-    // svg.selectAll("circle")
-    //     .data(nodes.slice(1))
-    //     .enter().append("circle")
-    //     .attr("r", function(d) { return d.radius; })
-    //     .attr("cx", function(d) { 
-    //       console.log(d)
-    //       return incomeGroupEnumValues[incomeGroupEnum.indexOf(d.IncomeGroup)] } )
-        //.attr("cx", function(d) { return xCoordinates(incomeGroup)} )//---this will be decided by income
-        
-        // .style("fill", function(lastYear,i){
-        //   return colorScale(lastYear[i]);
-        // }) //this needs to be percentage data
-        .style("fill","pink")
-        .style("stroke","salmon");
+        .style("fill", function(d,i){
+          return colorScale(parseFloat(d["% of change"]));
+        })
+        .style("stroke","grey")
+        .style("opacity", 0.5);
 
     
-//   arc.append("path")
-//     .attr("d", path)
-//     .attr("fill", function(d) { return color(d.data["Country Name"]); });
 
 
     // force.on("tick", function(e) {
