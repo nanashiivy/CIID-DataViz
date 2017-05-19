@@ -8,14 +8,16 @@
       height: auto;                 
       padding: 10px;             
       font: 12px sans-serif;        
-      background: #8C8C8C;   
+      background: white;   
       border: 0px;      
-      border-radius: 4px;           
+      border-radius: 2px;           
       pointer-events: none;
       font-family: "Gill Sans";
+      letter-spacing: 0.6px;
+
     }
     text.numbers {
-      font-size: 14px;
+      font-size: 12px;
       font-family: "Gill Sans";
       color: grey;
     }
@@ -138,13 +140,13 @@ d3.csv("data/Forest_Land_SqM_Test.csv", function(myData){
 
         svg.append("text")
           .attr("x", 10)             
-          .attr("y", 2176)
+          .attr("y", 2040)
           .attr("text-anchor", "right")  
-          .style("font-size", "14px") 
+          .style("font-size", "13px") 
           .style("font-family", "Gill Sans")  
           .style("fill", "grey")
           .style("opacity", 0.7)
-          .text("No change in forest area by square metre");
+          .text("0% change in forest area (sq. km)");
         
         svg.append("line")
           .attr("x1", width*0.2857)
@@ -188,9 +190,9 @@ d3.csv("data/Forest_Land_SqM_Test.csv", function(myData){
 
         svg.append("line")
           .attr("x1", 0)
-          .attr("y1", 2182)
+          .attr("y1", 2045)
           .attr("x2", width)
-          .attr("y2", 2182)
+          .attr("y2", 2045)
           .attr("stroke-width", 1)
           .attr("stroke", "grey")
           .style("opacity", 0.5);
@@ -230,11 +232,11 @@ d3.csv("data/Forest_Land_SqM_Test.csv", function(myData){
             .on("mouseover", function(d,i) {      
                 div.transition()        
                     .duration(200)      
-                    .style("opacity", .6);
+                    .style("opacity", 1);
 
-                div.html("<h3>" + d["Country Name"] + "</h3>" + "Change in total forest area: <br/>" + d["% of change"])  
-                    .style("left", (d3.event.pageX) + "px")     
-                    .style("top", (d3.event.pageY - 28) + "px")
+                div.html("<b>" + d["Country Name"] + "</b>" + "<br/>" + "Change in forest area: <br/>" + d["% of change"])  
+                    .style("left", (d3.event.pageX + 30) + "px")     
+                    .style("top", (d3.event.pageY - 30) + "px")
                     .style("color", "black");
                 })                  
 
